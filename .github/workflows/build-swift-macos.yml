@@ -1,0 +1,64 @@
+name: Build Swift macOS .app
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Swift (if needed)
+        run: swift --version || true
+
+      - name: Build Swift package
+        working-directory: ./
+        run: |
+          swift build -c release
+
+      - name: Create .app bundle
+        run: |
+          set -e
+          EXEC=".build/release/WidgetWallSwift"
+          APPDIR="dist/WidgetWall.app"
+          rm -rf "$APPDIR"
+          mkdir -p "$APPDIR/Contents/MacOS"
+          mkdir -p "$APPDIR/Contents/Resources"
+
+          # Basic Info.plist
+          cat > "$APPDIR/Contents/Info.plist" <<'PL'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleName</key>
+            <string>WidgetWall</string>
+            <key>CFBundleDisplayName</key>
+            <string>WidgetWall</string>
+            <key>CFBundleIdentifier</key>
+            <string>com.widgetwall.app</string>
+            <key>CFBundleVersion</key>
+            <string>0.1.0</string>
+            <key>CFBundleExecutable</key>
+            <string>WidgetWallSwift</string>
+            <key>LSMinimumSystemVersion</key>
+            <string>11.0</string>
+            <key>LSUIElement</key>
+            <true/>
+          </dict>
+          </plist>
+          PL
+
+          cp "$EXEC" "$APPDIR/Contents/MacOS/WidgetWallSwift"
+          chmod +x "$APPDIR/Contents/MacOS/WidgetWallSwift"
+
+      - name: Zip and upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: widgetwall-swift-app
+          path: dist/WidgetWall.app

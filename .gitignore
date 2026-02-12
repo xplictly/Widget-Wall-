@@ -1,0 +1,17 @@
+.DS_Store
+build/
+DerivedData/
+*.xcodeproj
+*.xcworkspace
+*.xcuserstate
+*.xcuserdata/
+.vscode/
+.venv*/
+*.swp
+*.swiftsourceinfo
+/.build
+/.swiftpm
+/.DS_Store
+*.xcarchive
+*.app
+*.ipa
